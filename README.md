@@ -7,4 +7,4 @@
 
 ## 安装
 在AstrBot面板输入仓库地址：
-`https://github.com/你的用户名/simple-cdn-plugin`
+`https://github.com/233china/simple-cdn-plugin`
