@@ -18,7 +18,7 @@ class TencentCDNPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
         self._manager = None
-        self._load_config(context.config)
+        self._load_config(context._config)  # 使用 context._config 而不是 context.config
 
     def _load_config(self, config):
         """安全加载配置"""
