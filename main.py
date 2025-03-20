@@ -1,4 +1,9 @@
-@register("simplecdn", "YourName", "腾讯云CDN管理插件", "1.1.0")
+@register(
+    "simplecdn",
+    "YourName", 
+    "腾讯云CDN管理插件",
+    "1.1.0"
+)
 class SimpleCdnPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
