@@ -1,6 +1,8 @@
+# metadata.yaml
 name: simplecdn
+root_dir: simplecdn  # 必须与插件目录名一致
 desc: 腾讯云CDN缓存管理插件
 help: 使用/cdn命令管理CDN缓存
-version: 1.1.0
+version: v1.1.0  # 注意版本号必须带v前缀
 author: eebk
 repo: https://github.com/233china/simple-cdn-plugin
