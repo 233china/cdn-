@@ -1,1 +1,27 @@
-1
+{
+    "secret_id": {
+        "type": "string",
+        "description": "腾讯云SecretId",
+        "hint": "从腾讯云控制台 > 访问管理 > API密钥管理获取",
+        "required": true
+    },
+    "secret_key": {
+        "type": "string",
+        "description": "腾讯云SecretKey",
+        "input_type": "password",
+        "required": true
+    },
+    "region": {
+        "type": "string", 
+        "description": "API区域代码",
+        "default": "ap-singapore",
+        "hint": "参考值: ap-beijing（北京）, ap-shanghai（上海）",
+        "required": true
+    },
+    "zone_id": {
+        "type": "string",
+        "description": "站点ID（ZONE ID）",
+        "hint": "从腾讯云CDN控制台 > 域名管理 > 域名详情页获取",
+        "required": true
+    }
+}
