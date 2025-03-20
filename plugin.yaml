@@ -1,9 +1,18 @@
 # plugin.yaml
 name: SimpleCDN
-version: 1.0
+version: 1.1
 author: YourName
 description: 极简腾讯云CDN刷新插件
 entry_point: main.py
+
+# ========== 新增以下配置 ==========
+ui:
+  admin_panel: true  # 启用管理界面
+  menu_title: "CDN管理"  # 侧边栏显示名称
+  menu_icon: "fa-bolt"  # FontAwesome图标
+  route_path: "/cdn-admin"  # 管理界面路由路径
+# ================================
+
 config_schema:
   secret_id:
     type: string
@@ -12,12 +21,12 @@ config_schema:
     type: string
     label: 腾讯云SecretKey
     input_type: password
+
 commands:
   - name: cdn
     description: CDN缓存管理
     usage: |
       /cdn <链接...> [--preheat]
-      示例：
+      示例:
       /cdn example.com/static/ --preheat
       /cdn example.com/image.jpg
-
