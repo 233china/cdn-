@@ -9,12 +9,12 @@ from astrbot.api.event import filter, AstrMessageEvent
 logger = logging.getLogger(__name__)
 
 @register(
-    "simplecdn",
+    "tencentcdn",
     "eebk",
     "腾讯云CDN管理插件",
     "1.1.0"
 )
-class SimpleCdnPlugin(Star):
+class TencentCDNPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
         logger.debug(f"配置文件路径: {context._config_path}")
@@ -66,44 +66,44 @@ class SimpleCdnPlugin(Star):
         else:
             logger.error("配置重载失败")
 
-@filter.command("cdn")
-async def handle_cdn_command(self, event: AstrMessageEvent):
-    """CDN缓存刷新/预热（修正事件对象）"""
-    try:
-        if not event.message_str.startswith("/cdn"):
-            return
+    @filter.command("cdn")
+    async def handle_cdn_command(self, event: AstrMessageEvent):
+        """CDN缓存刷新/预热（修正事件对象）"""
+        try:
+            if not event.message_str.startswith("/cdn"):
+                return
 
-        parts = event.message_str.strip().split()
-        if len(parts) < 2:
-            yield event.plain_result("❌ 格式错误，请使用 /cdn URL [--preheat]")
-            return
+            parts = event.message_str.strip().split()
+            if len(parts) < 2:
+                yield event.plain_result("❌ 格式错误，请使用 /cdn URL [--preheat]")
+                return
 
-        is_preheat = "--preheat" in parts
-        urls = [p for p in parts[1:] if not p.startswith("--")]
+            is_preheat = "--preheat" in parts
+            urls = [p for p in parts[1:] if not p.startswith("--")]
 
-        if not urls:
-            yield event.plain_result("❌ 请提供要刷新的URL")
-            return
+            if not urls:
+                yield event.plain_result("❌ 请提供要刷新的URL")
+                return
 
-        if not self._manager:
-            yield event.plain_result("❌ 插件未初始化，请检查配置")
-            return
+            if not self._manager:
+                yield event.plain_result("❌ 插件未初始化，请检查配置")
+                return
 
-        logger.debug(f"操作参数: is_preheat={is_preheat}, urls={urls}")
+            logger.debug(f"操作参数: is_preheat={is_preheat}, urls={urls}")
 
-        if is_preheat:
-            result = await self._manager.simple_preheat(urls)
-            msg = f"🔥 已预热{result['count']}个URL (请求ID: {result['request_id']})"
-        else:
-            result = await self._manager.simple_purge(urls)
-            msg = f"🔄 已刷新{result['count']}个URL (请求ID: {result['request_id']})"
+            if is_preheat:
+                result = await self._manager.simple_preheat(urls)
+                msg = f"🔥 已预热{result['count']}个URL (请求ID: {result['request_id']})"
+            else:
+                result = await self._manager.simple_purge(urls)
+                msg = f"🔄 已刷新{result['count']}个URL (请求ID: {result['request_id']})"
 
-        logger.info(msg)
-        yield event.plain_result(msg)
+            logger.info(msg)
+            yield event.plain_result(msg)
 
-    except Exception as e:
-        logger.error(f"操作失败: {str(e)}", exc_info=True)
-        yield event.plain_result(f"❌ 操作失败: {str(e)}")
+        except Exception as e:
+            logger.error(f"操作失败: {str(e)}", exc_info=True)
+            yield event.plain_result(f"❌ 操作失败: {str(e)}")
 
     async def terminate(self):
         """安全终止方法（增强资源释放）"""
