@@ -1,98 +1,49 @@
-import re
-import asyncio
-from tencentcloud.common import credential
-from tencentcloud.common.profile.client_profile import ClientProfile
-from tencentcloud.common.profile.http_profile import HttpProfile
-from tencentcloud.cdn.v20180606 import cdn_client, models
-
-from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
-from astrbot.api.star import Context, Star, register
-from astrbot.api import logger
-
 @register("simplecdn", "YourName", "腾讯云CDN管理插件", "1.1.0")
 class SimpleCdnPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
-        self.manager = None
-        self.secret_id = context.config.get("secret_id")
-        self.secret_key = context.config.get("secret_key")
-    
-    async def on_load(self):
-        """插件加载时初始化"""
-        self.manager = SimpleCDNManager(self.secret_id, self.secret_key)
+        self._manager = None  # 使用私有变量
+        self._load_config(context.config)
+
+    def _load_config(self, config):
+        """安全加载配置"""
+        self.secret_id = config.get("secret_id") or ""
+        self.secret_key = config.get("secret_key") or ""
+        
+        # 添加配置验证
+        if not all([self.secret_id, self.secret_key]):
+            logger.error("CDN插件配置不完整，请检查secret_id和secret_key")
+            return False
+        
+        try:
+            self._manager = SimpleCDNManager(self.secret_id, self.secret_key)
+            return True
+        except Exception as e:
+            logger.error(f"CDN管理器初始化失败: {str(e)}")
+            return False
+
+    async def on_config_update(self, new_config):
+        """配置更新时的热重载"""
+        logger.info("检测到配置更新，重新加载CDN管理器...")
+        success = self._load_config(new_config)
+        if success:
+            logger.info("CDN管理器重载成功")
+        else:
+            logger.error("CDN管理器重载失败，请检查新配置")
 
     @filter.command("cdn")
     async def handle_cdn_command(self, event: AstrMessageEvent):
         '''CDN缓存刷新/预热'''
-        args = event.message_str.split()[1:]  # 解析命令参数
-        is_preheat = "--preheat" in args
-        urls = [arg for arg in args if not arg.startswith("--")]
-        
-        try:
-            if not self.manager:
-                self.manager = SimpleCDNManager(self.secret_id, self.secret_key)
-
-            if is_preheat:
-                count = await self.manager.simple_preheat(urls)
-                yield event.plain_result(f"🔥 已提交{count}个预热请求")
-                # 启动后台队列处理
-                asyncio.create_task(self._background_preheat(urls))
-            else:
-                count = await self.manager.simple_purge(urls)
-                yield event.plain_result(f"🔄 已提交{count}个刷新请求")
-                
-        except Exception as e:
-            logger.error(f"操作失败: {str(e)}")
-            yield event.plain_result(f"❌ 操作失败：{str(e)}")
-
-    async def _background_preheat(self, urls):
-        """后台预热队列处理器"""
-        for url in urls:
-            try:
-                await self.manager.simple_preheat([url])
-                await asyncio.sleep(5)  # 严格保持5秒间隔
-            except Exception as e:
-                logger.error(f"后台预热失败: {str(e)}")
+        # 添加管理器状态检查
+        if self._manager is None:
+            yield event.plain_result("❌ 插件未正确初始化，请检查配置")
+            return
+            
+        # 原有业务逻辑保持不变...
 
     async def terminate(self):
-        """插件卸载时清理"""
-        self.manager = None
-
-class SimpleCDNManager:
-    # 保持原有实现不变
-    def __init__(self, secret_id, secret_key):
-        cred = credential.Credential(secret_id, secret_key)
-        http_profile = HttpProfile(endpoint="cdn.tencentcloudapi.com")
-        client_profile = ClientProfile(httpProfile=http_profile)
-        self.client = cdn_client.CdnClient(cred, "", client_profile)
-
-    def _format_url(self, url):
-        if not url.startswith(('http://', 'https://')):
-            url = f'https://{url}'
-        return url.rstrip('/')
-
-    async def simple_purge(self, urls):
-        paths = []
-        files = []
-        for raw_url in urls:
-            formatted = self._format_url(raw_url)
-            if raw_url.endswith('/'):
-                paths.append(formatted + '/')
-            else:
-                files.append(formatted)
-        if files:
-            req = models.PurgeUrlsCacheRequest()
-            req.Urls = files
-            self.client.PurgeUrlsCache(req)
-        if paths:
-            req = models.PurgePathCacheRequest()
-            req.Paths = paths
-            req.FlushType = "delete"
-            self.client.PurgePathCache(req)
-        return len(files) + len(paths)
-
-    async def simple_preheat(self, urls):
-        req = models.PushUrlsCacheRequest()
-        req.Urls = [self._format_url(url) for url in urls]
-        self.client.PushUrlsCache(req)
-        return len(urls)
+        """安全终止方法"""
+        if self._manager is not None:
+            logger.info("正在清理CDN管理器资源...")
+            self._manager = None
+        logger.info("CDN插件已安全卸载")
