@@ -1,6 +1,6 @@
 @register(
     "simplecdn",
-    "YourName", 
+    "eebk", 
     "腾讯云CDN管理插件",
     "1.1.0"
 )
