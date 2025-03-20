@@ -1,3 +1,6 @@
+# main.py 必须包含的关键导入
+from astrbot.api.star import register, Star, Context
+from astrbot.api.event import filter, AstrMessageEvent
 @register(
     "simplecdn",
     "eebk", 
