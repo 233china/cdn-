@@ -23,18 +23,21 @@ class SimpleCdnPlugin(Star):
         self._load_config(context._config)
 
     def _load_config(self, config):
-        """安全加载配置（包含详细日志）"""
-        logger.debug("========= 开始加载配置 =========")
-        logger.debug(f"原始配置内容: {dict(config)}")
-
-        # 提取关键配置项
-        required_config = {
-            'secret_id': config.get("secret_id", ""),
-            'secret_key': config.get("secret_key", ""),
-            'region': config.get("region", "ap-singapore"),
-            'zone_id': config.get("zone_id", "")
-        }
-        logger.debug(f"处理后配置: {required_config}")
+"""安全加载配置（增强日志）"""
+    logger.debug("===== 配置加载开始 =====")
+    logger.debug(f"原始配置数据类型: {type(config)}")
+    logger.debug(f"原始配置键列表: {list(config.keys())}")
+    
+    required_config = {
+        'secret_id': config.get("secret_id", ""),
+        'secret_key': config.get("secret_key", ""),
+        'region': config.get("region", "ap-singapore"),
+        'zone_id': config.get("zone_id", "")
+    }
+    
+    # 验证配置值类型
+    logger.debug(f"secret_id 类型: {type(required_config['secret_id'])}")
+    logger.debug(f"zone_id 值前6位: {str(required_config['zone_id'])[:6]}")
 
         # 配置完整性校验
         if not all(required_config.values()):
