@@ -1,0 +1,6 @@
+name: simplecdn
+desc: 腾讯云CDN缓存管理插件
+help: 使用/cdn命令管理CDN缓存
+version: v1.1
+author: YourName
+repo: https://github.com/yourname/astrbot-plugin-simplecdn
