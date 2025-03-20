@@ -69,37 +69,45 @@ class SimpleCdnPlugin(Star):
             logger.error("配置重载失败")
 
     @filter.command("cdn")
-    async def handle_cdn_command(self, event: AstrMessageEvent):
-    '''CDN缓存刷新/预热'''
-    # 错误：event.message_str → 修正为 event.content
-    args = event.content.split()[1:]  # 正确获取消息内容
-    is_preheat = "--preheat" in args
-    urls = [arg for arg in args if not arg.startswith("--")]
-
-        if not urls:
-            yield event.plain_result("❌ 请提供要刷新的URL")
+async def handle_cdn_command(self, event: AstrMessageEvent):
+    '''CDN缓存刷新/预热（修正事件属性）'''
+    try:
+        # 严格校验命令格式
+        if not event.content.startswith("/cdn"):
             return
 
-        try:
-            if not self._manager:
-                yield event.plain_result("❌ 插件未初始化，请检查配置")
-                return
+        # 分割参数
+        parts = event.content.strip().split()
+        if len(parts) < 2:
+            yield event.reply("❌ 格式错误，请使用 /cdn URL [--preheat]")
+            return
 
-            logger.debug(f"操作参数: is_preheat={is_preheat}, urls={urls}")
+        is_preheat = "--preheat" in parts
+        urls = [p for p in parts[1:] if not p.startswith("--")]
 
-            if is_preheat:
-                result = await self._manager.simple_preheat(urls)
-                msg = f"🔥 已预热{result['count']}个URL (请求ID: {result['request_id']})"
-            else:
-                result = await self._manager.simple_purge(urls)
-                msg = f"🔄 已刷新{result['count']}个URL (请求ID: {result['request_id']})"
-            
-            logger.info(msg)
-            yield event.plain_result(msg)
+        if not urls:
+            yield event.reply("❌ 请提供要刷新的URL")
+            return
 
-        except Exception as e:
-            logger.error(f"操作失败: {str(e)}", exc_info=True)
-            yield event.plain_result(f"❌ 操作失败: {str(e)}")
+        if not self._manager:
+            yield event.reply("❌ 插件未初始化，请检查配置")
+            return
+
+        logger.debug(f"操作参数: is_preheat={is_preheat}, urls={urls}")
+
+        if is_preheat:
+            result = await self._manager.simple_preheat(urls)
+            msg = f"🔥 已预热{result['count']}个URL (请求ID: {result['request_id']})"
+        else:
+            result = await self._manager.simple_purge(urls)
+            msg = f"🔄 已刷新{result['count']}个URL (请求ID: {result['request_id']})"
+        
+        logger.info(msg)
+        yield event.reply(msg)
+
+    except Exception as e:
+        logger.error(f"操作失败: {str(e)}", exc_info=True)
+        yield event.reply(f"❌ 操作失败: {str(e)}")
 
     async def terminate(self):
         """安全终止方法（增强资源释放）"""
