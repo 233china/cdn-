@@ -1,0 +1,5 @@
+name: simplecdn
+root_dir: simple_cdn_plugin
+desc: 腾讯云CDN缓存管理插件
+version: v1.1.0
+author: eebk
