@@ -2,12 +2,12 @@
     "secret_id": {
         "type": "string",
         "description": "腾讯云SecretId",
-        "hint": "从腾讯云控制台获取的SecretId"
+        "hint": "从腾讯云控制台获取的API密钥ID"
     },
     "secret_key": {
         "type": "string",
         "description": "腾讯云SecretKey",
-        "hint": "从腾讯云控制台获取的SecretKey",
+        "hint": "从腾讯云控制台获取的API密钥",
         "input_type": "password"
     }
 }
