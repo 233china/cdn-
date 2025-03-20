@@ -1,0 +1,13 @@
+{
+    "secret_id": {
+        "type": "string",
+        "description": "腾讯云SecretId",
+        "hint": "从腾讯云控制台获取的SecretId"
+    },
+    "secret_key": {
+        "type": "string",
+        "description": "腾讯云SecretKey",
+        "hint": "从腾讯云控制台获取的SecretKey",
+        "input_type": "password"
+    }
+}
