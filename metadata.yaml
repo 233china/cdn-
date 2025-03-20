@@ -1,7 +1,7 @@
 name: simplecdn
-root_dir: simple_cdn_plugin  # 必须与目录名完全一致！
+root_dir: simple_cdn_plugin  # 必须与目录名完全一致
 desc: 腾讯云CDN缓存管理插件
 help: 使用/cdn命令刷新或预热CDN缓存
-version: v1.1.0  # 必须带v前缀
+version: v1.1.0
 author: eebk
 repo: https://github.com/233china/simple-cdn-plugin
