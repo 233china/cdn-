@@ -11,7 +11,7 @@ class SimpleCdnPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
         self._manager = None  # 使用私有变量
-        self._load_config(context.config)
+        self._load_config(context._config)
 
     def _load_config(self, config):
         """安全加载配置"""
