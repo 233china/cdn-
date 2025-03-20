@@ -1,26 +1,6 @@
 {
-    "secret_id": {
-        "description": "腾讯云Secret ID",
-        "type": "string",
-        "hint": "在腾讯云控制台获取",
-        "obvious_hint": true
-    },
-    "secret_key": {
-        "description": "腾讯云Secret Key",
-        "type": "string",
-        "hint": "在腾讯云控制台获取",
-        "obvious_hint": true
-    },
-    "region": {
-        "description": "腾讯云区域",
-        "type": "string",
-        "hint": "如ap-singapore",
-        "default": "ap-singapore"
-    },
-    "zone_id": {
-        "description": "腾讯云CDN Zone ID",
-        "type": "string",
-        "hint": "在CDN控制台获取",
-        "obvious_hint": true
-    }
+  "secret_id": "AKIDISPBrKJafXCeuzrW2RfiaHqRu49DIFA2m",
+  "secret_key": "b7UjqmUEqGTUZVFoAJEwTnuoW1OYW5Vl",
+  "region": "ap-singapore",
+  "zone_id": "zone-2lv8l2cs8dhu"
 }
