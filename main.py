@@ -1,6 +1,6 @@
 # main.py
 import logging
-import asyncio
+import sys
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
@@ -19,25 +19,26 @@ from astrbot.api import logger
 class SimpleCdnPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
+        logger.debug(f"配置文件路径: {context._config_path}")  # 新增配置路径日志
         self._manager = None
         self._load_config(context._config)
 
     def _load_config(self, config):
-"""安全加载配置（增强日志）"""
-    logger.debug("===== 配置加载开始 =====")
-    logger.debug(f"原始配置数据类型: {type(config)}")
-    logger.debug(f"原始配置键列表: {list(config.keys())}")
-    
-    required_config = {
-        'secret_id': config.get("secret_id", ""),
-        'secret_key': config.get("secret_key", ""),
-        'region': config.get("region", "ap-singapore"),
-        'zone_id': config.get("zone_id", "")
-    }
-    
-    # 验证配置值类型
-    logger.debug(f"secret_id 类型: {type(required_config['secret_id'])}")
-    logger.debug(f"zone_id 值前6位: {str(required_config['zone_id'])[:6]}")
+        """安全加载配置（增强日志）"""
+        logger.debug("===== 配置加载开始 =====")
+        logger.debug(f"原始配置数据类型: {type(config)}")
+        logger.debug(f"原始配置键列表: {list(config.keys())}")
+        
+        required_config = {
+            'secret_id': config.get("secret_id", ""),
+            'secret_key': config.get("secret_key", ""),
+            'region': config.get("region", "ap-singapore"),
+            'zone_id': config.get("zone_id", "")
+        }
+        
+        # 验证配置值类型
+        logger.debug(f"secret_id 类型: {type(required_config['secret_id'])}")
+        logger.debug(f"zone_id 值前6位: {str(required_config['zone_id'])[:6]}")
 
         # 配置完整性校验
         if not all(required_config.values()):
@@ -112,20 +113,34 @@ class SimpleCdnPlugin(Star):
 
 class SimpleCDNManager:
     def __init__(self, secret_id, secret_key, region, zone_id):
+        """初始化腾讯云客户端（修复签名配置）"""
         try:
-            # 新增签名方法配置
+            logger.debug(f"初始化SDK参数: region={region}, zone_id={zone_id}")
+
+            # 凭证初始化
+            self.cred = credential.Credential(secret_id, secret_key)
+            
+            # HTTP客户端配置
+            http_profile = HttpProfile(
+                endpoint="cdn.tencentcloudapi.com",
+                reqTimeout=60  # 延长超时时间
+            )
+            
+            # 签名方法配置（关键修复点）
             client_profile = ClientProfile(httpProfile=http_profile)
             client_profile.signMethod = "TC3-HMAC-SHA256"  # 强制签名算法
             
-            # 显式指定 API 版本
+            # 创建客户端（显式指定API版本）
             self.client = cdn_client.CdnClient(
                 self.cred, 
                 region, 
                 client_profile,
-                api_version="2018-06-06"  # 新增此行
+                api_version="2018-06-06"  # 必须指定API版本
             )
+            self.zone_id = zone_id
+            logger.debug("SDK初始化完成")
         except Exception as e:
-            logger.error(f"SDK初始化失败 | 详细错误: {str(e)}", exc_info=True)
+            logger.error(f"SDK初始化失败: {str(e)}")
             raise
 
     def _format_url(self, url):
