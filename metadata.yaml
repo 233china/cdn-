@@ -1,4 +1,4 @@
-name: simple_cdn_plugin
+name: simplecdn
 root_dir: simple_cdn_plugin  # 必须与目录名完全一致！
 desc: 腾讯云CDN缓存管理插件
 help: 使用/cdn命令刷新或预热CDN缓存
