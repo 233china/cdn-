@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 class TencentCDNPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
-        logger.debug(f"配置文件路径: {context._config_path}")
+        logger.debug(f"配置文件路径: {context.config_path}")
         self._manager = None
-        self._load_config(context._config)
+        self._load_config(context.config)
 
     def _load_config(self, config):
         """安全加载配置（增强日志）"""
