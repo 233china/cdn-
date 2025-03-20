@@ -109,30 +109,20 @@ class SimpleCdnPlugin(Star):
 
 class SimpleCDNManager:
     def __init__(self, secret_id, secret_key, region, zone_id):
-        """初始化腾讯云客户端（增加异常捕获）"""
         try:
-            logger.debug(f"初始化SDK参数: region={region}, zone_id={zone_id}")
-
-            # 凭证初始化
-            self.cred = credential.Credential(secret_id, secret_key)
-            
-            # HTTP客户端配置
-            http_profile = HttpProfile(
-                endpoint="cdn.tencentcloudapi.com",
-                reqTimeout=60  # 延长超时时间
-            )
+            # 新增签名方法配置
             client_profile = ClientProfile(httpProfile=http_profile)
+            client_profile.signMethod = "TC3-HMAC-SHA256"  # 强制签名算法
             
-            # 创建客户端
+            # 显式指定 API 版本
             self.client = cdn_client.CdnClient(
                 self.cred, 
                 region, 
-                client_profile
+                client_profile,
+                api_version="2018-06-06"  # 新增此行
             )
-            self.zone_id = zone_id
-            logger.debug("SDK初始化完成")
         except Exception as e:
-            logger.error(f"SDK初始化失败: {str(e)}")
+            logger.error(f"SDK初始化失败 | 详细错误: {str(e)}", exc_info=True)
             raise
 
     def _format_url(self, url):
