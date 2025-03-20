@@ -1,3 +1,4 @@
+# main.py
 import logging
 import asyncio
 from tencentcloud.common import credential
@@ -30,10 +31,10 @@ class SimpleCdnPlugin(Star):
             'zone_id': config.get("zone_id", "")
         }
 
-        # 配置完整性检查
+        # 配置完整性校验
         if not all(required_config.values()):
             missing = [k for k, v in required_config.items() if not v]
-            logger.error(f"配置缺失: {', '.join(missing)}")
+            logger.error(f"配置缺失关键参数: {', '.join(missing)}")
             return False
 
         try:
@@ -91,16 +92,31 @@ class SimpleCdnPlugin(Star):
 
 class SimpleCDNManager:
     def __init__(self, secret_id, secret_key, region, zone_id):
-        # 初始化凭证和客户端
+        """初始化腾讯云客户端
+        
+        Args:
+            secret_id (str): API密钥ID
+            secret_key (str): API密钥KEY
+            region (str): 区域代码 (如ap-singapore)
+            zone_id (str): 站点ID (需包含zone-前缀)
+        """
         self.cred = credential.Credential(secret_id, secret_key)
+        self.region = region
         self.zone_id = zone_id
 
         # 配置HTTP客户端
-        http_profile = HttpProfile(endpoint=f"cdn.tencentcloudapi.com")
+        http_profile = HttpProfile(
+            endpoint="cdn.tencentcloudapi.com",
+            reqTimeout=30
+        )
         client_profile = ClientProfile(httpProfile=http_profile)
         
         # 创建区域化客户端
-        self.client = cdn_client.CdnClient(self.cred, region, client_profile)
+        self.client = cdn_client.CdnClient(
+            self.cred, 
+            self.region, 
+            client_profile
+        )
 
     def _format_url(self, url):
         """统一格式化URL"""
@@ -109,25 +125,31 @@ class SimpleCDNManager:
         return url.rstrip('/')
 
     async def simple_purge(self, urls):
-        """执行刷新操作"""
+        """执行URL刷新"""
         req = models.PurgeUrlsCacheRequest()
         req.Urls = [self._format_url(url) for url in urls]
         req.ZoneId = self.zone_id  # 绑定站点ID
 
-        resp = self.client.PurgeUrlsCache(req)
-        return {
-            "count": len(urls),
-            "request_id": resp.RequestId
-        }
+        try:
+            resp = self.client.PurgeUrlsCache(req)
+            return {
+                "count": len(urls),
+                "request_id": resp.RequestId
+            }
+        except Exception as e:
+            raise RuntimeError(f"刷新失败: {str(e)}")
 
     async def simple_preheat(self, urls):
-        """执行预热操作"""
+        """执行URL预热"""
         req = models.PushUrlsCacheRequest()
         req.Urls = [self._format_url(url) for url in urls]
         req.ZoneId = self.zone_id  # 绑定站点ID
 
-        resp = self.client.PushUrlsCache(req)
-        return {
-            "count": len(urls),
-            "request_id": resp.RequestId
-        }
+        try:
+            resp = self.client.PushUrlsCache(req)
+            return {
+                "count": len(urls),
+                "request_id": resp.RequestId
+            }
+        except Exception as e:
+            raise RuntimeError(f"预热失败: {str(e)}")
