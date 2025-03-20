@@ -70,10 +70,11 @@ class SimpleCdnPlugin(Star):
 
     @filter.command("cdn")
     async def handle_cdn_command(self, event: AstrMessageEvent):
-        '''CDN缓存刷新/预热（增加操作日志）'''
-        args = event.message_str.split()[1:]
-        is_preheat = "--preheat" in args
-        urls = [arg for arg in args if not arg.startswith("--")]
+    '''CDN缓存刷新/预热'''
+    # 错误：event.message_str → 修正为 event.content
+    args = event.content.split()[1:]  # 正确获取消息内容
+    is_preheat = "--preheat" in args
+    urls = [arg for arg in args if not arg.startswith("--")]
 
         if not urls:
             yield event.plain_result("❌ 请提供要刷新的URL")
